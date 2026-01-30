@@ -739,6 +739,8 @@
             draggedItem: null,
             dragStartX: 0,
             dragStartY: 0,
+            dragOffsetX: 0,
+            dragOffsetY: 0,
             isDraggingItem: false
         };
 
@@ -1010,15 +1012,27 @@
         }
 
         function handleItemDragStart(e, idx) {
+            e.preventDefault();
             state.draggedItem = idx;
             state.isDraggingItem = true;
-            const el = e.target;
             
-            const rect = el.getBoundingClientRect();
-            state.dragStartX = e.clientX - rect.left;
-            state.dragStartY = e.clientY - rect.top;
+            const item = state.items[idx];
+            const canvas = document.getElementById('shelfCanvas');
+            const rect = canvas.getBoundingClientRect();
+            const pixelsPerMeter = 200;
             
-            e.dataTransfer.effectAllowed = 'move';
+            // Store the offset from mouse to item's top-left corner
+            const compWidth = state.compartmentWidth * pixelsPerMeter;
+            const itemLeft = item.compartment * compWidth + item.x * pixelsPerMeter;
+            const itemBottom = item.y * pixelsPerMeter;
+            const canvasHeight = state.shelfHeight * pixelsPerMeter;
+            const itemTop = canvasHeight - itemBottom - (item.height / 1000 * pixelsPerMeter);
+            
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            state.dragOffsetX = mouseX - itemLeft;
+            state.dragOffsetY = mouseY - itemTop;
         }
 
         // Add mouse move handler for free item movement
@@ -1029,23 +1043,29 @@
             const rect = canvas.getBoundingClientRect();
             const pixelsPerMeter = 200;
 
-            // Calculate new position
-            const mouseX = (e.clientX - rect.left) / state.zoom;
-            const mouseY = (e.clientY - rect.top) / state.zoom;
+            // Calculate new position using the stored offset
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
             
             const canvasHeight = state.shelfHeight * pixelsPerMeter;
-            const x = mouseX;
-            const y = canvasHeight - mouseY;
+            
+            // Calculate item position (top-left corner)
+            const itemLeftPx = mouseX - state.dragOffsetX;
+            const itemTopPx = mouseY - state.dragOffsetY;
+            
+            // Convert to bottom position
+            const item = state.items[state.draggedItem];
+            const itemHeightPx = item.height / 1000 * pixelsPerMeter;
+            const itemBottomPx = canvasHeight - itemTopPx - itemHeightPx;
 
             // Determine compartment
             const compWidth = state.compartmentWidth * pixelsPerMeter;
-            const compartment = Math.floor(x / compWidth);
+            const compartment = Math.floor(itemLeftPx / compWidth);
 
             if (compartment >= 0 && compartment < state.compartmentCount) {
-                const item = state.items[state.draggedItem];
                 item.compartment = compartment;
-                item.x = (x - compartment * compWidth) / pixelsPerMeter;
-                item.y = Math.max(0, y / pixelsPerMeter);
+                item.x = (itemLeftPx - compartment * compWidth) / pixelsPerMeter;
+                item.y = Math.max(0, itemBottomPx / pixelsPerMeter);
                 
                 renderShelf();
             }
