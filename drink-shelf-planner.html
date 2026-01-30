@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Getränkeregal Planer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #8b7355;
+            --secondary: #a0826d;
+            --dark: #1a1a1a;
+            --darker: #0f0f0f;
+            --card-bg: #2a2a2a;
+            --border: #4a4a4a;
+            --text: #e8e8e8;
+            --accent: #6b5d52;
+            --white: #f5f5f5;
+        }
+
+        body {
+            font-family: 'IBM Plex Mono', monospace;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+            color: var(--text);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--primary);
+            padding: 1rem 2rem;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 1.8rem;
+            color: var(--white);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 80px;
+            bottom: 0;
+            width: 320px;
+            background: var(--card-bg);
+            border-right: 2px solid var(--border);
+            overflow-y: auto;
+            padding: 1.5rem;
+            z-index: 100;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .control-group {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input[type="number"], input[type="text"], select {
+            width: 100%;
+            padding: 0.6rem;
+            background: var(--darker);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        input[type="number"]:focus, input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(139, 115, 85, 0.3);
+        }
+
+        .item-template {
+            background: linear-gradient(135deg, var(--darker) 0%, var(--card-bg) 100%);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            cursor: grab;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .item-template::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .item-template:hover {
+            transform: translateX(5px);
+            border-color: var(--primary);
+            box-shadow: 0 4px 15px rgba(139, 115, 85, 0.3);
+        }
+
+        .item-template:hover::before {
+            opacity: 1;
+        }
+
+        .item-template:active {
+            cursor: grabbing;
+        }
+
+        .item-template-name {
+            font-weight: 500;
+            color: var(--primary);
+            margin-bottom: 0.3rem;
+            font-size: 0.9rem;
+        }
+
+        .item-template-dims {
+            font-size: 0.75rem;
+            color: var(--secondary);
+            opacity: 0.8;
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: var(--white);
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(139, 115, 85, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 115, 85, 0.5);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #5a5a5a 0%, #707070 100%);
+            box-shadow: 0 4px 15px rgba(90, 90, 90, 0.3);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 6px 20px rgba(90, 90, 90, 0.5);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 320px;
+            margin-top: 80px;
+            flex: 1;
+            padding: 2rem;
+            overflow: auto;
+            position: relative;
+        }
+
+        .controls-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        /* Canvas Container */
+        .canvas-container {
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            overflow: auto;
+            position: relative;
+        }
+
+        .shelf-canvas {
+            position: relative;
+            min-height: 600px;
+            transform-origin: top left;
+            transition: transform 0.3s;
+        }
+
+        .compartment {
+            display: inline-block;
+            position: relative;
+            border: 2px solid var(--primary);
+            background: rgba(139, 115, 85, 0.05);
+            margin-right: -2px;
+            vertical-align: top;
+        }
+
+        .compartment-label {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            color: var(--primary);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .shelf-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--secondary);
+            opacity: 0.6;
+            cursor: ns-resize;
+            transition: all 0.3s;
+        }
+
+        .shelf-line:hover {
+            height: 4px;
+            opacity: 1;
+            background: var(--white);
+        }
+
+        .shelf-line-label {
+            position: absolute;
+            right: 5px;
+            top: -20px;
+            font-size: 0.7rem;
+            color: var(--secondary);
+            background: var(--card-bg);
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .shelf-line-controls {
+            position: absolute;
+            left: 5px;
+            top: -20px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .shelf-line-btn {
+            background: #5a5a5a;
+            color: white;
+            border: none;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .shelf-line-btn:hover {
+            background: #707070;
+            transform: scale(1.05);
+        }
+
+        .placed-item {
+            position: absolute;
+            border: 2px solid var(--primary);
+            background: rgba(0, 136, 255, 0.15);
+            cursor: move;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            padding: 0.3rem;
+            text-align: center;
+            transition: all 0.2s;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .placed-item:hover {
+            border-color: #888;
+            box-shadow: 0 4px 15px rgba(136, 136, 136, 0.4);
+            z-index: 10;
+        }
+
+        .placed-item.dragging {
+            opacity: 0.6;
+            cursor: grabbing;
+        }
+
+        .placed-item img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .item-controls {
+            position: absolute;
+            top: -30px;
+            right: 0;
+            display: flex;
+            gap: 5px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .placed-item:hover .item-controls {
+            opacity: 1;
+        }
+
+        .item-control-btn {
+            background: #5a5a5a;
+            color: white;
+            border: none;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-content h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        /* Zoom Controls */
+        .zoom-controls {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            z-index: 500;
+        }
+
+        .zoom-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(139, 115, 85, 0.4);
+        }
+
+        .zoom-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(139, 115, 85, 0.6);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 280px;
+            }
+            .main-content {
+                margin-left: 280px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.3rem;
+            }
+            
+            .sidebar {
+                position: fixed;
+                left: -320px;
+                width: 300px;
+                transition: left 0.3s;
+            }
+
+            .sidebar.open {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+                position: fixed;
+                top: 90px;
+                left: 1rem;
+                z-index: 1001;
+                padding: 0.5rem 1rem;
+            }
+        }
+
+        .mobile-menu-btn {
+            display: none;
+        }
+
+        /* Loading */
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--white);
+            font-size: 1.2rem;
+            z-index: 3000;
+        }
+
+        /* Add shelf button */
+        .add-shelf-btn {
+            width: 100%;
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 0.6rem;
+            background: var(--darker);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.85rem;
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 0.6rem;
+            background: var(--darker);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        input[type="color"] {
+            width: 100%;
+            height: 40px;
+            padding: 0.3rem;
+            background: var(--darker);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>⚡ Getränkeregal Planer</h1>
+    </header>
+
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰ Menü</button>
+
+    <div class="app-container">
+        <aside class="sidebar" id="sidebar">
+            <h2>Regaleinstellungen</h2>
+            <div class="control-group">
+                <label>Gesamthöhe (m)</label>
+                <input type="number" id="shelfHeight" value="2.0" step="0.1" min="0.5" max="5">
+            </div>
+            <div class="control-group">
+                <label>Fachbreite (m)</label>
+                <input type="number" id="compartmentWidth" value="1.2" step="0.1" min="0.3" max="3">
+            </div>
+
+            <h2>Artikel</h2>
+            <div class="item-template" draggable="true" data-type="kiste-24x03">
+                <div class="item-template-name">Kiste 24× 0,3L</div>
+                <div class="item-template-dims">400×300×270 mm</div>
+            </div>
+            <div class="item-template" draggable="true" data-type="kiste-20x05">
+                <div class="item-template-name">Kiste 20× 0,5L</div>
+                <div class="item-template-dims">400×300×260 mm</div>
+            </div>
+            <div class="item-template" draggable="true" data-type="traeger-6x03">
+                <div class="item-template-name">Träger 6× 0,3L</div>
+                <div class="item-template-dims">231×155×365 mm</div>
+            </div>
+            <div class="item-template" draggable="true" data-type="traeger-4x03">
+                <div class="item-template-name">Träger 4× 0,3L</div>
+                <div class="item-template-dims">150×150×320 mm</div>
+            </div>
+            <div class="item-template" draggable="true" data-type="custom-kiste">
+                <div class="item-template-name">Custom Kiste</div>
+                <div class="item-template-dims">Anpassbar</div>
+            </div>
+            <div class="item-template" draggable="true" data-type="custom-traeger">
+                <div class="item-template-name">Custom Träger</div>
+                <div class="item-template-dims">Anpassbar</div>
+            </div>
+
+            <h2 style="margin-top: 2rem;">Aktionen</h2>
+            <button onclick="exportToPDF()" style="width: 100%; margin-bottom: 0.5rem;">PDF Exportieren</button>
+            <button onclick="showExportModal()" class="btn-secondary" style="width: 100%; margin-bottom: 0.5rem;">Layout Exportieren</button>
+            <button onclick="showImportModal()" class="btn-secondary" style="width: 100%;">Layout Importieren</button>
+        </aside>
+
+        <main class="main-content">
+            <div class="canvas-container">
+                <div class="shelf-canvas" id="shelfCanvas"></div>
+            </div>
+        </main>
+    </div>
+
+    <div class="zoom-controls">
+        <button class="zoom-btn" onclick="zoomIn()">+</button>
+        <button class="zoom-btn" onclick="zoomOut()">−</button>
+        <button class="zoom-btn" onclick="resetZoom()" style="font-size: 1rem;">⟲</button>
+    </div>
+
+    <!-- Edit Item Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <h2>Artikel bearbeiten</h2>
+            <div class="control-group">
+                <label>Name</label>
+                <input type="text" id="editName">
+            </div>
+            <div class="control-group">
+                <label>Breite (mm)</label>
+                <input type="number" id="editWidth" step="1">
+            </div>
+            <div class="control-group">
+                <label>Tiefe (mm)</label>
+                <input type="number" id="editDepth" step="1">
+            </div>
+            <div class="control-group">
+                <label>Höhe (mm)</label>
+                <input type="number" id="editHeight" step="1">
+            </div>
+            <div class="control-group">
+                <label>Farbe</label>
+                <input type="color" id="editColor">
+            </div>
+            <div class="control-group">
+                <label>Bild hochladen (optional)</label>
+                <input type="file" id="editImage" accept="image/*">
+            </div>
+            <div class="modal-actions">
+                <button onclick="saveItemEdit()">Speichern</button>
+                <button onclick="closeEditModal()" class="btn-secondary">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Item Modal -->
+    <div class="modal" id="customModal">
+        <div class="modal-content">
+            <h2>Custom Artikel erstellen</h2>
+            <div class="control-group">
+                <label>Name</label>
+                <input type="text" id="customName">
+            </div>
+            <div class="control-group">
+                <label>Breite (mm)</label>
+                <input type="number" id="customWidth" step="1" value="400">
+            </div>
+            <div class="control-group">
+                <label>Tiefe (mm)</label>
+                <input type="number" id="customDepth" step="1" value="300">
+            </div>
+            <div class="control-group">
+                <label>Höhe (mm)</label>
+                <input type="number" id="customHeight" step="1" value="300">
+            </div>
+            <div class="control-group">
+                <label>Farbe</label>
+                <input type="color" id="customColor" value="#0088ff">
+            </div>
+            <div class="control-group">
+                <label>Bild hochladen (optional)</label>
+                <input type="file" id="customImage" accept="image/*">
+            </div>
+            <div class="modal-actions">
+                <button onclick="createCustomItem()">Erstellen</button>
+                <button onclick="closeCustomModal()" class="btn-secondary">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <h2>Layout Export</h2>
+            <div class="control-group">
+                <label>Layout String</label>
+                <textarea id="exportString" readonly></textarea>
+            </div>
+            <div class="modal-actions">
+                <button onclick="copyExportString()">Kopieren</button>
+                <button onclick="closeExportModal()" class="btn-secondary">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div class="modal" id="importModal">
+        <div class="modal-content">
+            <h2>Layout Import</h2>
+            <div class="control-group">
+                <label>Layout String einfügen</label>
+                <textarea id="importString"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button onclick="importLayout()">Importieren</button>
+                <button onclick="closeImportModal()" class="btn-secondary">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let state = {
+            shelfHeight: 2.0,
+            compartmentWidth: 1.2,
+            compartments: [],
+            items: [],
+            zoom: 1,
+            panX: 0,
+            panY: 0,
+            editingItem: null,
+            customItemData: null,
+            draggedTemplate: null,
+            draggedItem: null,
+            dragStartX: 0,
+            dragStartY: 0
+        };
+
+        // Item templates
+        const itemTemplates = {
+            'kiste-24x03': { name: 'Kiste 24× 0,3L', width: 400, depth: 300, height: 270 },
+            'kiste-20x05': { name: 'Kiste 20× 0,5L', width: 400, depth: 300, height: 260 },
+            'traeger-6x03': { name: 'Träger 6× 0,3L', width: 231, depth: 155, height: 365 },
+            'traeger-4x03': { name: 'Träger 4× 0,3L', width: 150, depth: 150, height: 320 }
+        };
+
+        // Initialize
+        function init() {
+            // Create initial compartments
+            for (let i = 0; i < 6; i++) {
+                state.compartments.push({
+                    id: i,
+                    shelves: [1.5, 1.8] // Initial shelf positions
+                });
+            }
+
+            renderShelf();
+            setupEventListeners();
+        }
+
+        function setupEventListeners() {
+            // Shelf settings
+            document.getElementById('shelfHeight').addEventListener('change', (e) => {
+                state.shelfHeight = parseFloat(e.target.value);
+                renderShelf();
+            });
+
+            document.getElementById('compartmentWidth').addEventListener('change', (e) => {
+                state.compartmentWidth = parseFloat(e.target.value);
+                renderShelf();
+            });
+
+            // Drag and drop from templates
+            document.querySelectorAll('.item-template').forEach(template => {
+                template.addEventListener('dragstart', handleTemplateDragStart);
+            });
+
+            // Canvas drop
+            const canvas = document.getElementById('shelfCanvas');
+            canvas.addEventListener('dragover', handleDragOver);
+            canvas.addEventListener('drop', handleDrop);
+
+            // Pan with mouse drag (middle button)
+            canvas.addEventListener('mousedown', handlePanStart);
+            document.addEventListener('mousemove', handlePanMove);
+            document.addEventListener('mouseup', handlePanEnd);
+        }
+
+        function renderShelf() {
+            const canvas = document.getElementById('shelfCanvas');
+            const pixelsPerMeter = 200; // Scale factor
+            
+            const totalWidth = state.compartmentWidth * 6 * pixelsPerMeter;
+            const totalHeight = state.shelfHeight * pixelsPerMeter;
+
+            canvas.innerHTML = '';
+            canvas.style.width = totalWidth + 'px';
+            canvas.style.height = totalHeight + 'px';
+
+            // Render compartments
+            for (let i = 0; i < 6; i++) {
+                const comp = document.createElement('div');
+                comp.className = 'compartment';
+                comp.style.width = (state.compartmentWidth * pixelsPerMeter) + 'px';
+                comp.style.height = totalHeight + 'px';
+                comp.dataset.compartmentId = i;
+
+                // Label
+                const label = document.createElement('div');
+                label.className = 'compartment-label';
+                label.textContent = `Fach ${i + 1}`;
+                comp.appendChild(label);
+
+                // Render shelves
+                state.compartments[i].shelves.forEach((shelfHeight, shelfIdx) => {
+                    const shelf = document.createElement('div');
+                    shelf.className = 'shelf-line';
+                    shelf.style.bottom = (shelfHeight * pixelsPerMeter) + 'px';
+                    shelf.dataset.compartmentId = i;
+                    shelf.dataset.shelfIdx = shelfIdx;
+
+                    const shelfLabel = document.createElement('div');
+                    shelfLabel.className = 'shelf-line-label';
+                    shelfLabel.textContent = shelfHeight.toFixed(2) + 'm';
+                    shelf.appendChild(shelfLabel);
+
+                    const controls = document.createElement('div');
+                    controls.className = 'shelf-line-controls';
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'shelf-line-btn';
+                    removeBtn.textContent = '×';
+                    removeBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        removeShelf(i, shelfIdx);
+                    };
+                    controls.appendChild(removeBtn);
+
+                    shelf.appendChild(controls);
+
+                    // Make draggable
+                    shelf.addEventListener('mousedown', (e) => handleShelfDragStart(e, i, shelfIdx));
+
+                    comp.appendChild(shelf);
+                });
+
+                // Add shelf button
+                const addBtn = document.createElement('button');
+                addBtn.className = 'add-shelf-btn';
+                addBtn.textContent = '+ Regal hinzufügen';
+                addBtn.onclick = () => addShelf(i);
+                comp.appendChild(addBtn);
+
+                canvas.appendChild(comp);
+            }
+
+            // Render items
+            state.items.forEach((item, idx) => {
+                const itemEl = createItemElement(item, idx);
+                canvas.appendChild(itemEl);
+            });
+        }
+
+        function createItemElement(item, idx) {
+            const pixelsPerMeter = 200;
+            const el = document.createElement('div');
+            el.className = 'placed-item';
+            el.dataset.itemIdx = idx;
+
+            // Position
+            const compWidth = state.compartmentWidth * pixelsPerMeter;
+            el.style.left = (item.compartment * compWidth + item.x * pixelsPerMeter) + 'px';
+            el.style.bottom = (item.y * pixelsPerMeter) + 'px';
+            el.style.width = (item.width / 1000 * pixelsPerMeter) + 'px';
+            el.style.height = (item.height / 1000 * pixelsPerMeter) + 'px';
+
+            if (item.color) {
+                el.style.backgroundColor = item.color + '33';
+                el.style.borderColor = item.color;
+            }
+
+            // Content
+            if (item.image) {
+                const img = document.createElement('img');
+                img.src = item.image;
+                el.appendChild(img);
+            } else {
+                el.textContent = item.name;
+            }
+
+            // Controls
+            const controls = document.createElement('div');
+            controls.className = 'item-controls';
+
+            const editBtn = document.createElement('button');
+            editBtn.className = 'item-control-btn';
+            editBtn.textContent = '✎';
+            editBtn.onclick = (e) => {
+                e.stopPropagation();
+                openEditModal(idx);
+            };
+            controls.appendChild(editBtn);
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'item-control-btn';
+            deleteBtn.textContent = '×';
+            deleteBtn.onclick = (e) => {
+                e.stopPropagation();
+                deleteItem(idx);
+            };
+            controls.appendChild(deleteBtn);
+
+            el.appendChild(controls);
+
+            // Make draggable
+            el.draggable = true;
+            el.addEventListener('dragstart', (e) => handleItemDragStart(e, idx));
+
+            return el;
+        }
+
+        function handleTemplateDragStart(e) {
+            const type = e.target.dataset.type;
+            
+            if (type === 'custom-kiste' || type === 'custom-traeger') {
+                e.preventDefault();
+                openCustomModal(type);
+                return;
+            }
+
+            state.draggedTemplate = type;
+            e.dataTransfer.effectAllowed = 'copy';
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            
+            if (!state.draggedTemplate) return;
+
+            const canvas = document.getElementById('shelfCanvas');
+            const rect = canvas.getBoundingClientRect();
+            const pixelsPerMeter = 200;
+
+            const x = (e.clientX - rect.left) / state.zoom;
+            const y = rect.height - (e.clientY - rect.top) / state.zoom;
+
+            // Determine compartment
+            const compWidth = state.compartmentWidth * pixelsPerMeter;
+            const compartment = Math.floor(x / compWidth);
+
+            if (compartment < 0 || compartment >= 6) return;
+
+            // Create item
+            const template = itemTemplates[state.draggedTemplate];
+            const xInComp = (x - compartment * compWidth) / pixelsPerMeter;
+            const yPos = y / pixelsPerMeter;
+
+            const item = {
+                name: template.name,
+                width: template.width,
+                depth: template.depth,
+                height: template.height,
+                compartment: compartment,
+                x: xInComp,
+                y: yPos,
+                color: '#0088ff'
+            };
+
+            if (!checkOverlap(item)) {
+                state.items.push(item);
+                renderShelf();
+            } else {
+                alert('Artikel überschneidet sich mit einem anderen!');
+            }
+
+            state.draggedTemplate = null;
+        }
+
+        function handleItemDragStart(e, idx) {
+            state.draggedItem = idx;
+            const el = e.target;
+            el.classList.add('dragging');
+            
+            const rect = el.getBoundingClientRect();
+            state.dragStartX = e.clientX - rect.left;
+            state.dragStartY = e.clientY - rect.top;
+        }
+
+        function checkOverlap(newItem, excludeIdx = -1) {
+            const pixelsPerMeter = 200;
+            
+            return state.items.some((item, idx) => {
+                if (idx === excludeIdx) return false;
+                if (item.compartment !== newItem.compartment) return false;
+
+                const overlap = (
+                    newItem.x < item.x + item.width / 1000 &&
+                    newItem.x + newItem.width / 1000 > item.x &&
+                    newItem.y < item.y + item.height / 1000 &&
+                    newItem.y + newItem.height / 1000 > item.y
+                );
+
+                return overlap;
+            });
+        }
+
+        function deleteItem(idx) {
+            state.items.splice(idx, 1);
+            renderShelf();
+        }
+
+        function openEditModal(idx) {
+            state.editingItem = idx;
+            const item = state.items[idx];
+
+            document.getElementById('editName').value = item.name;
+            document.getElementById('editWidth').value = item.width;
+            document.getElementById('editDepth').value = item.depth;
+            document.getElementById('editHeight').value = item.height;
+            document.getElementById('editColor').value = item.color || '#0088ff';
+
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+            state.editingItem = null;
+        }
+
+        function saveItemEdit() {
+            if (state.editingItem === null) return;
+
+            const item = state.items[state.editingItem];
+            item.name = document.getElementById('editName').value;
+            item.width = parseFloat(document.getElementById('editWidth').value);
+            item.depth = parseFloat(document.getElementById('editDepth').value);
+            item.height = parseFloat(document.getElementById('editHeight').value);
+            item.color = document.getElementById('editColor').value;
+
+            const imageFile = document.getElementById('editImage').files[0];
+            if (imageFile) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    item.image = e.target.result;
+                    closeEditModal();
+                    renderShelf();
+                };
+                reader.readAsDataURL(imageFile);
+            } else {
+                closeEditModal();
+                renderShelf();
+            }
+        }
+
+        function openCustomModal(type) {
+            state.customItemData = { type };
+            document.getElementById('customName').value = type === 'custom-kiste' ? 'Custom Kiste' : 'Custom Träger';
+            document.getElementById('customModal').classList.add('active');
+        }
+
+        function closeCustomModal() {
+            document.getElementById('customModal').classList.remove('active');
+            state.customItemData = null;
+        }
+
+        function createCustomItem() {
+            const name = document.getElementById('customName').value;
+            const width = parseFloat(document.getElementById('customWidth').value);
+            const depth = parseFloat(document.getElementById('customDepth').value);
+            const height = parseFloat(document.getElementById('customHeight').value);
+            const color = document.getElementById('customColor').value;
+
+            const item = {
+                name,
+                width,
+                depth,
+                height,
+                compartment: 0,
+                x: 0.1,
+                y: 0.1,
+                color
+            };
+
+            const imageFile = document.getElementById('customImage').files[0];
+            if (imageFile) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    item.image = e.target.result;
+                    state.items.push(item);
+                    closeCustomModal();
+                    renderShelf();
+                };
+                reader.readAsDataURL(imageFile);
+            } else {
+                state.items.push(item);
+                closeCustomModal();
+                renderShelf();
+            }
+        }
+
+        // Shelf management
+        function addShelf(compartmentId) {
+            const shelves = state.compartments[compartmentId].shelves;
+            const newHeight = shelves.length > 0 ? Math.min(...shelves) - 0.3 : state.shelfHeight - 0.3;
+            
+            if (newHeight > 0) {
+                shelves.push(newHeight);
+                renderShelf();
+            }
+        }
+
+        function removeShelf(compartmentId, shelfIdx) {
+            state.compartments[compartmentId].shelves.splice(shelfIdx, 1);
+            renderShelf();
+        }
+
+        let draggingShelf = null;
+
+        function handleShelfDragStart(e, compartmentId, shelfIdx) {
+            e.stopPropagation();
+            draggingShelf = { compartmentId, shelfIdx, startY: e.clientY };
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            if (!draggingShelf) return;
+
+            const pixelsPerMeter = 200;
+            const deltaY = (draggingShelf.startY - e.clientY) / pixelsPerMeter;
+            const currentHeight = state.compartments[draggingShelf.compartmentId].shelves[draggingShelf.shelfIdx];
+            let newHeight = currentHeight + deltaY;
+
+            // Constrain to ±5cm from initial positions
+            const initialHeights = [1.5, 1.8];
+            const shelfIdx = draggingShelf.shelfIdx;
+            if (shelfIdx < initialHeights.length) {
+                const initial = initialHeights[shelfIdx];
+                newHeight = Math.max(initial - 0.05, Math.min(initial + 0.05, newHeight));
+            }
+
+            newHeight = Math.max(0.1, Math.min(state.shelfHeight - 0.1, newHeight));
+
+            state.compartments[draggingShelf.compartmentId].shelves[draggingShelf.shelfIdx] = newHeight;
+            draggingShelf.startY = e.clientY;
+            renderShelf();
+        });
+
+        document.addEventListener('mouseup', () => {
+            draggingShelf = null;
+        });
+
+        // Zoom and Pan
+        function zoomIn() {
+            state.zoom = Math.min(state.zoom + 0.2, 3);
+            applyTransform();
+        }
+
+        function zoomOut() {
+            state.zoom = Math.max(state.zoom - 0.2, 0.5);
+            applyTransform();
+        }
+
+        function resetZoom() {
+            state.zoom = 1;
+            state.panX = 0;
+            state.panY = 0;
+            applyTransform();
+        }
+
+        function applyTransform() {
+            const canvas = document.getElementById('shelfCanvas');
+            canvas.style.transform = `scale(${state.zoom}) translate(${state.panX}px, ${state.panY}px)`;
+        }
+
+        let isPanning = false;
+        let panStartX = 0;
+        let panStartY = 0;
+
+        function handlePanStart(e) {
+            if (e.button === 1 || (e.button === 0 && e.ctrlKey)) {
+                isPanning = true;
+                panStartX = e.clientX - state.panX;
+                panStartY = e.clientY - state.panY;
+                e.preventDefault();
+            }
+        }
+
+        function handlePanMove(e) {
+            if (isPanning) {
+                state.panX = e.clientX - panStartX;
+                state.panY = e.clientY - panStartY;
+                applyTransform();
+            }
+        }
+
+        function handlePanEnd(e) {
+            isPanning = false;
+        }
+
+        // Export/Import
+        function exportLayoutString() {
+            const data = {
+                shelfHeight: state.shelfHeight,
+                compartmentWidth: state.compartmentWidth,
+                compartments: state.compartments,
+                items: state.items.map(item => ({
+                    ...item,
+                    image: undefined // Don't include images in string
+                }))
+            };
+
+            return btoa(JSON.stringify(data));
+        }
+
+        function showExportModal() {
+            const exportStr = exportLayoutString();
+            document.getElementById('exportString').value = exportStr;
+            document.getElementById('exportModal').classList.add('active');
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.remove('active');
+        }
+
+        function copyExportString() {
+            const textarea = document.getElementById('exportString');
+            textarea.select();
+            document.execCommand('copy');
+            alert('Layout String kopiert!');
+        }
+
+        function showImportModal() {
+            document.getElementById('importModal').classList.add('active');
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModal').classList.remove('active');
+        }
+
+        function importLayout() {
+            const importStr = document.getElementById('importString').value;
+            
+            try {
+                const data = JSON.parse(atob(importStr));
+                state.shelfHeight = data.shelfHeight;
+                state.compartmentWidth = data.compartmentWidth;
+                state.compartments = data.compartments;
+                state.items = data.items;
+
+                document.getElementById('shelfHeight').value = state.shelfHeight;
+                document.getElementById('compartmentWidth').value = state.compartmentWidth;
+
+                renderShelf();
+                closeImportModal();
+                alert('Layout erfolgreich importiert!');
+            } catch (e) {
+                alert('Fehler beim Importieren: Ungültiger Layout String');
+            }
+        }
+
+        // PDF Export
+        async function exportToPDF() {
+            const loadingEl = document.createElement('div');
+            loadingEl.className = 'loading';
+            loadingEl.textContent = 'PDF wird erstellt...';
+            document.body.appendChild(loadingEl);
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+
+                // Page 1: Item List
+                pdf.setFontSize(18);
+                pdf.text('Artikelliste', 15, 20);
+
+                pdf.setFontSize(10);
+                let y = 35;
+
+                // Count items
+                const itemCounts = {};
+                state.items.forEach(item => {
+                    const key = `${item.name} (${item.width}×${item.depth}×${item.height}mm)`;
+                    itemCounts[key] = (itemCounts[key] || 0) + 1;
+                });
+
+                Object.entries(itemCounts).forEach(([key, count]) => {
+                    pdf.text(`${count}× ${key}`, 15, y);
+                    y += 7;
+
+                    if (y > 270) {
+                        pdf.addPage();
+                        y = 20;
+                    }
+                });
+
+                // Page 2: Layout
+                pdf.addPage();
+                pdf.setFontSize(18);
+                pdf.text('Regal Layout', 15, 20);
+
+                const canvas = document.getElementById('shelfCanvas');
+                const canvasImage = await html2canvas(canvas, {
+                    backgroundColor: '#141b3a',
+                    scale: 2
+                });
+
+                const imgData = canvasImage.toDataURL('image/png');
+                const imgWidth = 180;
+                const imgHeight = (canvasImage.height * imgWidth) / canvasImage.width;
+
+                pdf.addImage(imgData, 'PNG', 15, 30, imgWidth, Math.min(imgHeight, 240));
+
+                pdf.save('regal-layout.pdf');
+            } catch (e) {
+                alert('Fehler beim PDF Export: ' + e.message);
+            } finally {
+                document.body.removeChild(loadingEl);
+            }
+        }
+
+        // Mobile menu
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // Initialize on load
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
