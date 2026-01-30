@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Getränkeregal Planer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
@@ -15,20 +15,20 @@
         }
 
         :root {
-            --primary: #8b7355;
-            --secondary: #a0826d;
-            --dark: #1a1a1a;
-            --darker: #0f0f0f;
-            --card-bg: #2a2a2a;
-            --border: #4a4a4a;
-            --text: #e8e8e8;
-            --accent: #6b5d52;
-            --white: #f5f5f5;
+            --primary: #ffffff;
+            --secondary: #e0e0e0;
+            --dark: #000000;
+            --darker: #4a4a4a;
+            --card-bg: #5a5a5a;
+            --border: #ffffff;
+            --text: #000000;
+            --accent: #666666;
+            --white: #ffffff;
         }
 
         body {
-            font-family: 'IBM Plex Mono', monospace;
-            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #4a4a4a;
             color: var(--text);
             overflow-x: hidden;
             min-height: 100vh;
@@ -46,7 +46,7 @@
             top: 0;
             left: 0;
             right: 0;
-            background: rgba(26, 26, 26, 0.95);
+            background: rgba(74, 74, 74, 0.95);
             backdrop-filter: blur(10px);
             border-bottom: 2px solid var(--primary);
             padding: 1rem 2rem;
@@ -55,12 +55,12 @@
         }
 
         h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 900;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
             font-size: 1.8rem;
             color: var(--white);
-            text-transform: uppercase;
-            letter-spacing: 3px;
+            text-transform: none;
+            letter-spacing: 0;
         }
 
         /* Sidebar */
@@ -79,12 +79,13 @@
         }
 
         .sidebar h2 {
-            font-family: 'Orbitron', sans-serif;
+            font-family: 'Inter', sans-serif;
             font-size: 1rem;
-            color: var(--primary);
+            color: var(--white);
             margin-bottom: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            text-transform: none;
+            letter-spacing: 0;
+            font-weight: 600;
         }
 
         .control-group {
@@ -99,9 +100,9 @@
             display: block;
             margin-bottom: 0.5rem;
             font-size: 0.85rem;
-            color: var(--secondary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            color: var(--white);
+            text-transform: none;
+            letter-spacing: 0;
         }
 
         input[type="number"], input[type="text"], select {
@@ -110,16 +111,16 @@
             background: var(--darker);
             border: 1px solid var(--border);
             border-radius: 4px;
-            color: var(--text);
-            font-family: 'IBM Plex Mono', monospace;
+            color: var(--white);
+            font-family: 'Inter', sans-serif;
             font-size: 0.9rem;
             transition: all 0.3s;
         }
 
         input[type="number"]:focus, input[type="text"]:focus, select:focus {
             outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 10px rgba(139, 115, 85, 0.3);
+            border-color: var(--white);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
         }
 
         .item-template {
@@ -148,8 +149,8 @@
 
         .item-template:hover {
             transform: translateX(5px);
-            border-color: var(--primary);
-            box-shadow: 0 4px 15px rgba(139, 115, 85, 0.3);
+            border-color: var(--white);
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
         }
 
         .item-template:hover::before {
@@ -162,7 +163,7 @@
 
         .item-template-name {
             font-weight: 500;
-            color: var(--primary);
+            color: var(--white);
             margin-bottom: 0.3rem;
             font-size: 0.9rem;
         }
@@ -174,24 +175,25 @@
         }
 
         button {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: var(--white);
+            background: var(--white);
+            color: var(--dark);
             border: none;
             padding: 0.7rem 1.5rem;
             border-radius: 6px;
             cursor: pointer;
-            font-family: 'Orbitron', sans-serif;
+            font-family: 'Inter', sans-serif;
             font-weight: 600;
             font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            text-transform: none;
+            letter-spacing: 0;
             transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(139, 115, 85, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
 
         button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(139, 115, 85, 0.5);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            background: var(--secondary);
         }
 
         button:active {
@@ -199,12 +201,14 @@
         }
 
         .btn-secondary {
-            background: linear-gradient(135deg, #5a5a5a 0%, #707070 100%);
-            box-shadow: 0 4px 15px rgba(90, 90, 90, 0.3);
+            background: var(--accent);
+            color: var(--white);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
 
         .btn-secondary:hover {
-            box-shadow: 0 6px 20px rgba(90, 90, 90, 0.5);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            background: #777;
         }
 
         /* Main Content */
@@ -230,6 +234,7 @@
             border: 2px solid var(--border);
             border-radius: 12px;
             padding: 2rem;
+            padding-bottom: 5rem;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
             overflow: auto;
             position: relative;
@@ -245,8 +250,8 @@
         .compartment {
             display: inline-block;
             position: relative;
-            border: 2px solid var(--primary);
-            background: rgba(139, 115, 85, 0.05);
+            border: 2px solid var(--white);
+            background: rgba(255, 255, 255, 0.05);
             margin-right: -2px;
             vertical-align: top;
         }
@@ -257,7 +262,7 @@
             left: 50%;
             transform: translateX(-50%);
             font-size: 0.75rem;
-            color: var(--primary);
+            color: var(--white);
             font-weight: 500;
             white-space: nowrap;
         }
@@ -267,7 +272,7 @@
             left: 0;
             right: 0;
             height: 2px;
-            background: var(--secondary);
+            background: var(--white);
             opacity: 0.6;
             cursor: ns-resize;
             transition: all 0.3s;
@@ -284,8 +289,8 @@
             right: 5px;
             top: -20px;
             font-size: 0.7rem;
-            color: var(--secondary);
-            background: var(--card-bg);
+            color: var(--white);
+            background: var(--darker);
             padding: 2px 6px;
             border-radius: 3px;
         }
@@ -299,8 +304,8 @@
         }
 
         .shelf-line-btn {
-            background: #5a5a5a;
-            color: white;
+            background: var(--white);
+            color: var(--dark);
             border: none;
             padding: 2px 8px;
             border-radius: 3px;
@@ -310,13 +315,13 @@
         }
 
         .shelf-line-btn:hover {
-            background: #707070;
+            background: var(--secondary);
             transform: scale(1.05);
         }
 
         .placed-item {
             position: absolute;
-            border: 2px solid var(--primary);
+            border: 2px solid var(--white);
             background: rgba(0, 136, 255, 0.15);
             cursor: move;
             display: flex;
@@ -328,11 +333,12 @@
             transition: all 0.2s;
             border-radius: 4px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            color: var(--dark);
         }
 
         .placed-item:hover {
-            border-color: #888;
-            box-shadow: 0 4px 15px rgba(136, 136, 136, 0.4);
+            border-color: var(--white);
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.4);
             z-index: 10;
         }
 
@@ -362,14 +368,14 @@
         }
 
         .item-control-btn {
-            background: #5a5a5a;
-            color: white;
+            background: var(--white);
+            color: var(--dark);
             border: none;
             padding: 3px 8px;
             border-radius: 3px;
             font-size: 0.7rem;
             cursor: pointer;
-            font-family: 'IBM Plex Mono', monospace;
+            font-family: 'Inter', sans-serif;
         }
 
         /* Modal */
@@ -404,8 +410,8 @@
         }
 
         .modal-content h2 {
-            font-family: 'Orbitron', sans-serif;
-            color: var(--primary);
+            font-family: 'Inter', sans-serif;
+            color: var(--white);
             margin-bottom: 1.5rem;
             font-size: 1.2rem;
         }
@@ -431,8 +437,8 @@
             width: 45px;
             height: 45px;
             border-radius: 50%;
-            background: var(--primary);
-            color: var(--white);
+            background: var(--white);
+            color: var(--dark);
             border: none;
             font-size: 1.5rem;
             cursor: pointer;
@@ -440,12 +446,13 @@
             align-items: center;
             justify-content: center;
             transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(139, 115, 85, 0.4);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
         }
 
         .zoom-btn:hover {
             transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(139, 115, 85, 0.6);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+            background: var(--secondary);
         }
 
         /* Responsive */
@@ -505,10 +512,10 @@
 
         /* Add shelf button */
         .add-shelf-btn {
-            width: 100%;
             margin-top: 0.5rem;
             padding: 0.5rem;
             font-size: 0.75rem;
+            white-space: nowrap;
         }
 
         textarea {
@@ -517,8 +524,8 @@
             background: var(--darker);
             border: 1px solid var(--border);
             border-radius: 4px;
-            color: var(--text);
-            font-family: 'IBM Plex Mono', monospace;
+            color: var(--white);
+            font-family: 'Inter', sans-serif;
             font-size: 0.85rem;
             min-height: 100px;
             resize: vertical;
@@ -549,7 +556,7 @@
 </head>
 <body>
     <header>
-        <h1>⚡ Getränkeregal Planer</h1>
+        <h1>Getränkeregal Planer</h1>
     </header>
 
     <button class="mobile-menu-btn" onclick="toggleSidebar()">☰ Menü</button>
@@ -557,6 +564,10 @@
     <div class="app-container">
         <aside class="sidebar" id="sidebar">
             <h2>Regaleinstellungen</h2>
+            <div class="control-group">
+                <label>Anzahl Fächer</label>
+                <input type="number" id="compartmentCount" value="6" step="1" min="1" max="20">
+            </div>
             <div class="control-group">
                 <label>Gesamthöhe (m)</label>
                 <input type="number" id="shelfHeight" value="2.0" step="0.1" min="0.5" max="5">
@@ -716,6 +727,7 @@
         let state = {
             shelfHeight: 2.0,
             compartmentWidth: 1.2,
+            compartmentCount: 6,
             compartments: [],
             items: [],
             zoom: 1,
@@ -726,7 +738,8 @@
             draggedTemplate: null,
             draggedItem: null,
             dragStartX: 0,
-            dragStartY: 0
+            dragStartY: 0,
+            isDraggingItem: false
         };
 
         // Item templates
@@ -740,19 +753,29 @@
         // Initialize
         function init() {
             // Create initial compartments
-            for (let i = 0; i < 6; i++) {
-                state.compartments.push({
-                    id: i,
-                    shelves: [1.5, 1.8] // Initial shelf positions
-                });
-            }
-
+            initializeCompartments();
             renderShelf();
             setupEventListeners();
         }
 
+        function initializeCompartments() {
+            state.compartments = [];
+            for (let i = 0; i < state.compartmentCount; i++) {
+                state.compartments.push({
+                    id: i,
+                    shelves: [] // Start with no shelves
+                });
+            }
+        }
+
         function setupEventListeners() {
             // Shelf settings
+            document.getElementById('compartmentCount').addEventListener('change', (e) => {
+                state.compartmentCount = parseInt(e.target.value);
+                initializeCompartments();
+                renderShelf();
+            });
+
             document.getElementById('shelfHeight').addEventListener('change', (e) => {
                 state.shelfHeight = parseFloat(e.target.value);
                 renderShelf();
@@ -783,7 +806,7 @@
             const canvas = document.getElementById('shelfCanvas');
             const pixelsPerMeter = 200; // Scale factor
             
-            const totalWidth = state.compartmentWidth * 6 * pixelsPerMeter;
+            const totalWidth = state.compartmentWidth * state.compartmentCount * pixelsPerMeter;
             const totalHeight = state.shelfHeight * pixelsPerMeter;
 
             canvas.innerHTML = '';
@@ -791,7 +814,7 @@
             canvas.style.height = totalHeight + 'px';
 
             // Render compartments
-            for (let i = 0; i < 6; i++) {
+            for (let i = 0; i < state.compartmentCount; i++) {
                 const comp = document.createElement('div');
                 comp.className = 'compartment';
                 comp.style.width = (state.compartmentWidth * pixelsPerMeter) + 'px';
@@ -837,15 +860,28 @@
                     comp.appendChild(shelf);
                 });
 
-                // Add shelf button
-                const addBtn = document.createElement('button');
-                addBtn.className = 'add-shelf-btn';
-                addBtn.textContent = '+ Regal hinzufügen';
-                addBtn.onclick = () => addShelf(i);
-                comp.appendChild(addBtn);
-
                 canvas.appendChild(comp);
             }
+
+            // Add shelf buttons below the compartments
+            const buttonRow = document.createElement('div');
+            buttonRow.style.position = 'absolute';
+            buttonRow.style.bottom = '-50px';
+            buttonRow.style.left = '0';
+            buttonRow.style.right = '0';
+            buttonRow.style.display = 'flex';
+
+            for (let i = 0; i < state.compartmentCount; i++) {
+                const addBtn = document.createElement('button');
+                addBtn.className = 'add-shelf-btn';
+                addBtn.style.width = (state.compartmentWidth * pixelsPerMeter) + 'px';
+                addBtn.style.marginRight = '-2px';
+                addBtn.textContent = '+ Regal';
+                addBtn.onclick = () => addShelf(i);
+                buttonRow.appendChild(addBtn);
+            }
+
+            canvas.appendChild(buttonRow);
 
             // Render items
             state.items.forEach((item, idx) => {
@@ -905,9 +941,11 @@
 
             el.appendChild(controls);
 
-            // Make draggable
-            el.draggable = true;
-            el.addEventListener('dragstart', (e) => handleItemDragStart(e, idx));
+            // Make draggable with mouse
+            el.addEventListener('mousedown', (e) => {
+                if (e.target.classList.contains('item-control-btn')) return;
+                handleItemDragStart(e, idx);
+            });
 
             return el;
         }
@@ -946,7 +984,7 @@
             const compWidth = state.compartmentWidth * pixelsPerMeter;
             const compartment = Math.floor(x / compWidth);
 
-            if (compartment < 0 || compartment >= 6) return;
+            if (compartment < 0 || compartment >= state.compartmentCount) return;
 
             // Create item
             const template = itemTemplates[state.draggedTemplate];
@@ -964,25 +1002,61 @@
                 color: '#0088ff'
             };
 
-            if (!checkOverlap(item)) {
-                state.items.push(item);
-                renderShelf();
-            } else {
-                alert('Artikel überschneidet sich mit einem anderen!');
-            }
+            // Allow placement without overlap check for free movement
+            state.items.push(item);
+            renderShelf();
 
             state.draggedTemplate = null;
         }
 
         function handleItemDragStart(e, idx) {
             state.draggedItem = idx;
+            state.isDraggingItem = true;
             const el = e.target;
-            el.classList.add('dragging');
             
             const rect = el.getBoundingClientRect();
             state.dragStartX = e.clientX - rect.left;
             state.dragStartY = e.clientY - rect.top;
+            
+            e.dataTransfer.effectAllowed = 'move';
         }
+
+        // Add mouse move handler for free item movement
+        document.addEventListener('mousemove', (e) => {
+            if (!state.isDraggingItem || state.draggedItem === null) return;
+
+            const canvas = document.getElementById('shelfCanvas');
+            const rect = canvas.getBoundingClientRect();
+            const pixelsPerMeter = 200;
+
+            // Calculate new position
+            const mouseX = (e.clientX - rect.left) / state.zoom;
+            const mouseY = (e.clientY - rect.top) / state.zoom;
+            
+            const canvasHeight = state.shelfHeight * pixelsPerMeter;
+            const x = mouseX;
+            const y = canvasHeight - mouseY;
+
+            // Determine compartment
+            const compWidth = state.compartmentWidth * pixelsPerMeter;
+            const compartment = Math.floor(x / compWidth);
+
+            if (compartment >= 0 && compartment < state.compartmentCount) {
+                const item = state.items[state.draggedItem];
+                item.compartment = compartment;
+                item.x = (x - compartment * compWidth) / pixelsPerMeter;
+                item.y = Math.max(0, y / pixelsPerMeter);
+                
+                renderShelf();
+            }
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            if (state.isDraggingItem) {
+                state.isDraggingItem = false;
+                state.draggedItem = null;
+            }
+        });
 
         function checkOverlap(newItem, excludeIdx = -1) {
             const pixelsPerMeter = 200;
@@ -1099,11 +1173,14 @@
         // Shelf management
         function addShelf(compartmentId) {
             const shelves = state.compartments[compartmentId].shelves;
-            const newHeight = shelves.length > 0 ? Math.min(...shelves) - 0.3 : state.shelfHeight - 0.3;
+            // Add new shelf at middle of shelf height, or slightly lower if there are existing shelves
+            const newHeight = shelves.length > 0 ? Math.min(...shelves) - 0.3 : state.shelfHeight / 2;
             
-            if (newHeight > 0) {
+            if (newHeight > 0.1) {
                 shelves.push(newHeight);
                 renderShelf();
+            } else {
+                alert('Nicht genug Platz für weiteres Regal');
             }
         }
 
@@ -1127,14 +1204,7 @@
             const currentHeight = state.compartments[draggingShelf.compartmentId].shelves[draggingShelf.shelfIdx];
             let newHeight = currentHeight + deltaY;
 
-            // Constrain to ±5cm from initial positions
-            const initialHeights = [1.5, 1.8];
-            const shelfIdx = draggingShelf.shelfIdx;
-            if (shelfIdx < initialHeights.length) {
-                const initial = initialHeights[shelfIdx];
-                newHeight = Math.max(initial - 0.05, Math.min(initial + 0.05, newHeight));
-            }
-
+            // Allow free movement within the shelf bounds
             newHeight = Math.max(0.1, Math.min(state.shelfHeight - 0.1, newHeight));
 
             state.compartments[draggingShelf.compartmentId].shelves[draggingShelf.shelfIdx] = newHeight;
@@ -1199,6 +1269,7 @@
             const data = {
                 shelfHeight: state.shelfHeight,
                 compartmentWidth: state.compartmentWidth,
+                compartmentCount: state.compartmentCount,
                 compartments: state.compartments,
                 items: state.items.map(item => ({
                     ...item,
@@ -1241,11 +1312,13 @@
                 const data = JSON.parse(atob(importStr));
                 state.shelfHeight = data.shelfHeight;
                 state.compartmentWidth = data.compartmentWidth;
+                state.compartmentCount = data.compartmentCount || 6;
                 state.compartments = data.compartments;
                 state.items = data.items;
 
                 document.getElementById('shelfHeight').value = state.shelfHeight;
                 document.getElementById('compartmentWidth').value = state.compartmentWidth;
+                document.getElementById('compartmentCount').value = state.compartmentCount;
 
                 renderShelf();
                 closeImportModal();
